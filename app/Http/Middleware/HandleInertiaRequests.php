@@ -13,7 +13,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @var string
      */
-    protected $rootView = 'app';
+    protected $rootView = 'admin.app';
 
     /**
      * Determine the current asset version.
@@ -35,13 +35,23 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request)
     {
         return array_merge(parent::share($request), [
-            'auth' => [
-                'user' => $request->user(),
-            ],
+            'auth' => function () use ($request) {
+                return [
+                    'user' => $request->user() ?: null,
+                ];
+            },
             'ziggy' => function () use ($request) {
-                return array_merge((new Ziggy)->toArray(), [
-                    'location' => $request->url(),
-                ]);
+                return array_merge((new Ziggy)->toArray(),
+                    [
+                        'location' => $request->url(),
+                    ],
+                );
+            },
+            'flash' => function () use ($request) {
+                return [
+                    'success' => $request->session()->get('success'),
+                    'error' => $request->session()->get('error'),
+                ];
             },
         ]);
     }
